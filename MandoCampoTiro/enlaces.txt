@@ -1,0 +1,17 @@
+[PANTALLA LCD 20x4 I2C]
+	
+	Tutorial pantalla i2c:
+		https://naylampmechatronics.com/blog/35_tutorial-lcd-con-i2c-controla-un-lcd-con-solo-dos-pines.html
+	
+	Descargar libreria i2c:
+		https://www.arduinolibraries.info/libraries/liquid-crystal-i2-c
+
+
+[BOTONES]
+	Tutorial boton input pull up
+		https://docs.arduino.cc/tutorials/generic/digital-input-pullup
+
+
+[BLUETOOTH]
+	Recibir el mensaje en formato string e imprimirlo
+		https://forum.arduino.cc/t/receiving-data-string-from-bluetooth/296066/4
