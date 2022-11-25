@@ -9,22 +9,38 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 SoftwareSerial BT(12,11);    // Definimos los pines RX y TX del Arduino conectados al Bluetooth
 String readString;
 
-int SPK = 4;
-
+int SPK = 3;
 int btn_num_tiradores = 7;
-int btn_start = 8; //parece que no va
+int btn_start = 5;
 int btn_reset = 6;
-int btn_acierto = 9;
-int btn_fallo = 5;
+int btn_acierto =8 ;
+int btn_fallo = 9;
 int btn_atras = 10;
 
+// variables globales
+int NUM_TIRADORES = 1;
+int NUM_PLATOS = 5;
+int tirador = 1;
+int plato = 1;
+int mensaje_empezar = 0;
+
+// estados
+boolean ESTADO_SELECCION = true;
+boolean ESTADO_EMPEZAR = false;
+boolean ESTADO_FINALIZADO = false;
+
+//puntuacion
+int puntos[6][25] = {{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
+                    ,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
+                    ,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
+                    ,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
+                    ,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
+                    ,{-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1}
+                    };
 
 void setup() {
   Serial.begin(9600);
-  BT.begin(9600);
-  
   pinMode(SPK, OUTPUT);
-  
   pinMode(btn_num_tiradores, INPUT_PULLUP);
   pinMode(btn_start, INPUT_PULLUP);
   pinMode(btn_reset, INPUT_PULLUP);
@@ -37,82 +53,119 @@ void setup() {
   //Encender la luz de fondo.
   lcd.backlight();
   // Escribimos el Mensaje en el LCD.
-  lcd.print("Hola Mundo");
+  lcd.setCursor(0,0);
+  lcd.print("  CLUB DE TIRO  ");
+  lcd.setCursor(0,1);
+  lcd.print("  LES PEDRERES  ");
   digitalWrite(SPK, HIGH);
   delay(300);
   digitalWrite(SPK, LOW);
+
+  // Damos 3 segundos de delay y empezamos
+  delay(2000);
+  lcd.clear();
+  lcd.print("Num. tiradores:");
+  lcd.setCursor(0,1);
+  lcd.print(NUM_TIRADORES);
 }
 
 void loop() {
 
-  if (digitalRead(btn_atras) == LOW){
-      Serial.println("Se ha pulsado el boton ATRAS");
-      lcd.clear();
-      lcd.print("Se ha pulsado el boton ATRAS");
+  // seleccion del numero de tiradores
+  if (ESTADO_SELECCION == true){
+    
+    if (digitalRead(btn_num_tiradores) == LOW) {
+      NUM_TIRADORES += 1;
+
+      if (NUM_TIRADORES == 7){NUM_TIRADORES=1;}
+      
+      lcd.setCursor(0,1);
+      lcd.print(NUM_TIRADORES);
       digitalWrite(SPK, HIGH);
-      delay(300);
+      delay(100);
       digitalWrite(SPK, LOW);
-  }
-  
-  if (digitalRead(btn_num_tiradores) == LOW){
-      Serial.println("Se ha pulsado el boton NUM_TIRADORES");
-      lcd.clear();
-      lcd.print("Se ha pulsado el boton NUM_TIRADORES");
-      digitalWrite(SPK, HIGH);
       delay(300);
-      digitalWrite(SPK, LOW);
+    }
+
+    if (digitalRead(btn_start) == LOW) {
+      delay(300);
+      ESTADO_SELECCION = false;
+      ESTADO_EMPEZAR = true;
+    }
+
+
   }
 
-  if (digitalRead(btn_start) == LOW){
-      Serial.println("Se ha pulsado el boton START");
-      lcd.clear();
-      lcd.print("Se ha pulsado el boton START");
-      digitalWrite(SPK, HIGH);
-      delay(300);
-      digitalWrite(SPK, LOW);
+  // empezamos la partida
+  if (ESTADO_EMPEZAR == true){
+
+    digitalWrite(SPK, HIGH);
+    delay(1200);
+    digitalWrite(SPK, LOW);
+    
+    for (plato=1; plato<=NUM_PLATOS; plato++){
+      for(tirador=1; tirador<=NUM_TIRADORES; tirador++){
+          lcd.clear();
+          lcd.print("Tirador: " + String(tirador) + "/" + String(NUM_TIRADORES));
+          lcd.setCursor(0,1);
+          lcd.print("Plato: " + String(plato) + "/" + String(NUM_PLATOS));
+          
+          Serial.print("Tirador: ");
+          Serial.print(tirador);
+          Serial.print(" Plato: ");
+          Serial.println(plato);
+          
+          while(1){
+            //esperamos a que se pulse ACIERTO o FALLO
+            if (digitalRead(btn_acierto) == LOW || digitalRead(btn_fallo) == LOW) {
+              lcd.clear();
+              lcd.print("  Siguiente ... ");
+              digitalWrite(SPK, HIGH);
+              delay(100);
+              digitalWrite(SPK, LOW);
+              delay(1200);
+              break;
+            }
+            delay(50);
+          }//fin while
+          
+        }
+    }
+    ESTADO_FINALIZADO = true;
+    ESTADO_EMPEZAR = false;
   }
 
-  if (digitalRead(btn_reset) == LOW){
-      Serial.println("Se ha pulsado el boton RESET");
-      lcd.clear();
-      lcd.print("Se ha pulsado el boton RESET");
-      digitalWrite(SPK, HIGH);
-      delay(300);
-      digitalWrite(SPK, LOW);
-  }
+  if (ESTADO_FINALIZADO == true){
+    lcd.clear();
+    lcd.print("Serie finalizada");
+    lcd.setCursor(0,1);
+    lcd.print(" Presiona reset ");
+    
+    digitalWrite(SPK, HIGH);
+    delay(1200);
+    digitalWrite(SPK, LOW);
+   
 
-  if (digitalRead(btn_acierto) == LOW){
-      Serial.println("Se ha pulsado el boton ACIERTO");
-      lcd.clear();
-      lcd.print("Se ha pulsado el boton ACIERTO");
-      digitalWrite(SPK, HIGH);
-      delay(300);
-      digitalWrite(SPK, LOW);
-  }
+    
+    while(1){
+      //esperamos a que se pulse RESET
+      if (digitalRead(btn_reset) == LOW) {
+        
+        ESTADO_FINALIZADO = false;
+        ESTADO_SELECCION = true;
+        NUM_TIRADORES = 1;
 
-  if (digitalRead(btn_fallo) == LOW){
-      Serial.println("Se ha pulsado el boton FALLO");
-      lcd.clear();
-      lcd.print("Se ha pulsado el boton FALLO");
-      digitalWrite(SPK, HIGH);
-      delay(300);
-      digitalWrite(SPK, LOW);
-  }
-
-  while (BT.available()) {
-    delay(3);  
-      char c = BT.read();
-    readString += c; 
-  }
-  
-  if (readString.length() >0) {
-     lcd.clear();
-      int i = 0;
-     for(i=0; i<readString.length()-2;i+=1){
-      lcd.print(readString[i]);
-      Serial.print(readString[i]);
+        lcd.clear();
+        lcd.print("Num. tiradores:");
+        lcd.setCursor(0,1);
+        lcd.print(NUM_TIRADORES);
+        
+        delay(1000);
+        break;
       }
-     readString = "";
-  }
-
+      delay(50);
+   }//fin while 
+ }
+ 
+  // ...
 }
