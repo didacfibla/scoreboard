@@ -68,10 +68,11 @@ for row_index in range(4, NUMERO_TIRADORES + 4):
 
         # Resto de columnas: platos
         else:
-            btn = Button(frame, text=f"({col_index},{row_index})", bg="white", borderwidth=1)
+            btn = Button(frame, text=f"({col_index},{row_index-3})", bg="white", borderwidth=1)
             btn.grid(row=row_index, column=col_index, sticky=N + S + E + W)
 
-            tablero[(row_index - 4, col_index)] = btn
+            tablero[(row_index - 3, col_index)] = btn
+    print(tablero.keys())
 
 LOOP_ACTIVE = True
 while LOOP_ACTIVE:
