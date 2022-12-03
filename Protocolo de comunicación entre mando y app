@@ -1,0 +1,37 @@
+PROTOCOLO DE COMUNICACIÓN ENTRE MANDO Y APP
+-------------------------------------------
+
+Parte 1: Conexión
+
+- Mando arranca y intenta conectarse a la APP a través de la MAC.
+- Si falla se reintenta constantemente.
+- Si se conecta pasamos a la parte 2.
+
+Parte 2: Envio de ordenes
+
+	1. El mando envio a la app [TIRADOR:SERIE:FALLO|ACIERTO]
+	2. Si la app recibe la orden envia al mando la confirmación.
+	3. El mando recibe la respuesta, si coincide el tirador y la serie recibida con la que ha mandado. pasa al siguiente tirador.
+	4. Si el mando no recibe la respuesta, se mantiene la serie y tirador para que se vuelva a pulsar y a enviar
+
+	Mando -------[1:1:FALL0]--------> App
+	Mando <------[1:1:OK]------------ App  
+
+	Mando -------[2:1:ACIERTO]------> App
+	Mando <------[2:1:OK]------------ App
+
+	...
+
+Parte 2: Atrás
+
+	1. El mando envio a la app [2:1:ATRAS]
+	2. La app recibe la orden y deshace la ultima tirada
+	3. La app envia la confirmación [2:1:OK]
+	4. Si el mando recibe la confirmación, tira atrás.
+
+	Mando -------[2:1:ATRAS]--------> App  
+	Mando <------[2:1:OK]------------ App
+
+
+***
+El mando solo avanza o retrocede si recibe la confirmación de la app  
